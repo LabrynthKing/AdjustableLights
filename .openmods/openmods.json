@@ -1,0 +1,70 @@
+{
+    "$schema": "https://openmods.net/manifest.schema.json",
+    "schemaVersion": 2,
+    "slug": "adjustablelights",
+    "name": "Adjustable Lights",
+    "supportedGameId": "subnautica-2",
+    "releaseAssets": [
+        "AdjustableLights-v*.zip"
+    ],
+    "primaryAsset": "AdjustableLights-v*.zip",
+    "readme": "/README.md",
+    "thumbnail": "adjustablelights.png",
+    "media": [
+        {
+            "type": "image",
+            "url": "ex3.png",
+            "label": "Example 1:-"
+        },
+        {
+            "type": "image",
+            "url": "ex4.png",
+            "label": "Example 2:-"
+        },
+        {
+            "type": "image",
+            "url": "ex5.png",
+            "label": "Example 3:-"
+        },
+        {
+            "type": "image",
+            "url": "ex6.png",
+            "label": "Example 4:-"
+        },
+        {
+            "type": "image",
+            "url": "ex7.png",
+            "label": "Example 5:-"
+        },
+        {
+            "type": "image",
+            "url": "ex8.png",
+            "label": "Example 6:-"
+        },
+        {
+            "type": "image",
+            "url": "ex9.png",
+            "label": "Example 7:-"
+        },
+        {
+            "type": "image",
+            "url": "ex10.png",
+            "label": "Example 8:-"
+        },
+        {
+            "type": "image",
+            "url": "ex11.png",
+            "label": "Example 9:-"
+        },
+        {
+            "type": "image",
+            "url": "ex12.png",
+            "label": "Example 10:-"
+        },
+        {
+            "type": "image",
+            "url": "ex13.png",
+            "label": "Example 11:-"
+        }
+    ]
+}
