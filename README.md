@@ -59,6 +59,13 @@
 - Support Tadpole Chassis'
 - Maybe Add VolumetricScatteringIntensity And SpecularScale Customization
 
+## **Notes:-**
+
+- This Is My Fourth Mod Ever (I Really Need To Stop Saying That Every Mod LOL). This Was One Of My First Expiriences With Lua Which Felt Kind Of Weird B/C I Am Very Used To Types Lol (As You Can See By All The Annotations In The Code).
+- Please Report Any Bugs In The Posts/Bugs Tab
+- The Code Is Fully Open Source On My [Github](https://github.com/LabrynthKing/AdjustableLights)
+- My Discord Username Is `labrynthking`
+
 ## **Credits:-**
 
 - **[JustChaldea](https://www.nexusmods.com/profile/JustChaldea):** For The [Mod Settings For Subnautica 2](https://www.nexusmods.com/subnautica2/mods/20) Mod
