@@ -65,6 +65,11 @@
             "type": "image",
             "url": "ex13.png",
             "label": "Example 11:-"
+        },
+        {
+            "type": "image",
+            "url": "config.png",
+            "label": "Configuration:-"
         }
     ]
 }

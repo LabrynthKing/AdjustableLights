@@ -30,6 +30,10 @@
 
 - **Color (RGB):** Gives You Full Control Over The Light's Color, You Can Use Any [RGB Color Calculator](https://www.rapidtables.com/web/color/RGB_Color.html) To Get The Values!
 
+<u>**Note:- You Can Use In-Game Settings Through The [Mod Settings For Subnautica 2](https://www.nexusmods.com/subnautica2/mods/20) Mod To Adjust The Values!**</u>
+
+***
+
 ## **Currently Supported Lights:-**
 
 - **Flashlight**
@@ -45,7 +49,10 @@
 
 1. Download Required Dependencies Using Their Installation Methods
 2. Download This Mod Through The Files Tab 
-3. Extract The Archive To Your `Subnautica2/Subnautica2/`
+3. Extract The Archive To Your `Subnautica2\Subnautica2\Binaries\Win64\ue4ss\Mods` Folder
+4. Enjoy!
+
+***
 
 ## **TODO:-**
 
