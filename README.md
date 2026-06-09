@@ -14,6 +14,8 @@
 
 - **Per-Component Control:** Independently Adjust The "Main" and "Helper" Lights On Vehicles Like The Tadpole Or Tools Like The WakeMaker To Get The Perfect Lighting Balance!
 
+- **Hot Reload:** No Need To Restart The Game Or Anything, It Will Automatically Reload Your Settings As Soon As You Apply Them!
+
 ## **Configuration Options:-**
 
 - **Intensity:** How Bright The Light Is. Higher Values Make It Blinding While Lower Values Are Dimmer And Easier On The Eyes.
@@ -39,7 +41,10 @@
 - **Flashlight**
 - **Wakemaker**
 - **Scanner**
+- **WorkLight**
 - **Tadpole (Default)**
+- **Tadpole (Scout Ray)**
+- **Tadpole (Hauler)**
 
 ***
 
@@ -56,8 +61,9 @@
 
 ## **TODO:-**
 
-- Support Tadpole Chassis'
-- Maybe Add VolumetricScatteringIntensity And SpecularScale Customization
+- ~~Support Tadpole Chassis'~~
+- ~~Support WorkLight~~
+- Maybe Add VolumetricScatteringIntensity And SpecularScale Customization (If Y'all Want This Then I'll Implement It)
 
 ## **Notes:-**
 

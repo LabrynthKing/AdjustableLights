@@ -1,778 +1,211 @@
--- SN2ModSettings
-local MANIFEST_PATH = "./ue4ss/Mods/SN2ModSettings/registrations/AdjustableLights.lua"
+local Order = { "Flashlight", "Wakemaker", "Scanner", "Worklight", "Tadpole", "ScoutRay", "Hauler" }
 
-local function write_text(path, body)
-	local dir = path:match("(.*[/\\])")
-	os.execute('mkdir "' .. dir:gsub("/", "\\") .. '" 2>nul')
+---Yes I Am Lazy
+---@param lights table<string, Light>
+---@return table Config
+---@return string LayoutString
+function GenerateConfig(lights)
+	local Config = {}
+	local Layout = {
+		name = "AdjustableLights",
+		display = "Adjustable Lights",
+		version = "1.1.0",
+		github = "LabrynthKing/AdjustableLights",
+		nexus_id = "381",
+		settings = {},
+	}
 
-	local f = io.open(path, "w")
-	if not f then
-		return false
+	for _, lightName in ipairs(Order) do
+		local lightData = lights[lightName]
+		if lightData then
+			local subKeys = {}
+			for k in pairs(lightData.Defaults) do
+				table.insert(subKeys, k)
+			end
+			table.sort(subKeys)
+
+			for _, subKey in ipairs(subKeys) do
+				local defaultValues = lightData.Defaults[subKey]
+
+				local isSingle = (subKey == "D") or (subKey == "F")
+				local suffix = isSingle and "" or subKey
+				local uiLabel = isSingle and lightName or string.format("%s (%s)", lightName, subKey)
+
+				local masterEnableKey = "Enable" .. lightName .. suffix
+				local colorEnableKey = "Enable" .. lightName .. suffix .. "Color"
+
+				Config[masterEnableKey] = false
+				Config[lightName .. suffix .. "Intensity"] = defaultValues.Intensity
+				Config[lightName .. suffix .. "Radius"] = defaultValues.AttenuationRadius
+				Config[lightName .. suffix .. "InnerAngle"] = defaultValues.InnerConeAngle
+				Config[lightName .. suffix .. "OuterAngle"] = defaultValues.OuterConeAngle
+				Config[lightName .. suffix .. "Temperature"] = defaultValues.Temperature
+				Config[lightName .. suffix .. "Falloff"] = defaultValues.LightFalloffExponent
+				Config[colorEnableKey] = false
+				Config[lightName .. suffix .. "ColorR"] = defaultValues.Color.R
+				Config[lightName .. suffix .. "ColorG"] = defaultValues.Color.G
+				Config[lightName .. suffix .. "ColorB"] = defaultValues.Color.B
+
+				-- Master Toggle
+				table.insert(Layout.settings, {
+					key = masterEnableKey,
+					title = "Enable " .. uiLabel,
+					description = "Toggle " .. uiLabel .. " Customization.",
+					type = "toggle",
+					default = false,
+				})
+
+				-- Intensity Slider
+				table.insert(Layout.settings, {
+					key = lightName .. suffix .. "Intensity",
+					title = uiLabel .. " Intensity",
+					description = "The Intensity Of The " .. uiLabel .. ".",
+					type = "slider",
+					default = defaultValues.Intensity,
+					min = (defaultValues.Intensity < 1) and 0.01 or 0.1,
+					max = (defaultValues.Intensity < 1) and 5.0 or 50.0,
+					step = (defaultValues.Intensity < 1) and 0.05 or 0.5,
+					format = "float",
+					enabled_by = masterEnableKey,
+				})
+
+				-- Attenuation Radius Slider
+				table.insert(Layout.settings, {
+					key = lightName .. suffix .. "Radius",
+					title = uiLabel .. " Attenuation Radius",
+					description = "The Attenuation Radius Of The " .. uiLabel .. ".",
+					type = "slider",
+					default = defaultValues.AttenuationRadius,
+					min = 100.0,
+					max = 10000.0,
+					step = 100.0,
+					format = "float",
+					enabled_by = masterEnableKey,
+				})
+
+				-- Inner Cone Angle Slider
+				table.insert(Layout.settings, {
+					key = lightName .. suffix .. "InnerAngle",
+					title = uiLabel .. " Inner Cone Angle",
+					description = "The Inner Cone Angle Of The " .. uiLabel .. ".",
+					type = "slider",
+					default = defaultValues.InnerConeAngle,
+					min = 0.0,
+					max = 90.0,
+					step = 1.0,
+					format = "float",
+					enabled_by = masterEnableKey,
+				})
+
+				-- Outer Cone Angle Slider
+				table.insert(Layout.settings, {
+					key = lightName .. suffix .. "OuterAngle",
+					title = uiLabel .. " Outer Cone Angle",
+					description = "The Outer Cone Angle Of The " .. uiLabel .. ".",
+					type = "slider",
+					default = defaultValues.OuterConeAngle,
+					min = 0.0,
+					max = 90.0,
+					step = 1.0,
+					format = "float",
+					enabled_by = masterEnableKey,
+				})
+
+				-- Temperature Slider
+				table.insert(Layout.settings, {
+					key = lightName .. suffix .. "Temperature",
+					title = uiLabel .. " Temperature",
+					description = "The Temperature Of The " .. uiLabel .. " (Disabled When Using Color)",
+					type = "slider",
+					default = defaultValues.Temperature,
+					min = 1000.0,
+					max = 20000.0,
+					step = 100.0,
+					format = "float",
+					enabled_by = masterEnableKey,
+				})
+
+				-- Falloff Exponent Slider
+				table.insert(Layout.settings, {
+					key = lightName .. suffix .. "Falloff",
+					title = uiLabel .. " Falloff Exponent",
+					description = "The Falloff Exponent Of The " .. uiLabel .. ".",
+					type = "slider",
+					default = defaultValues.LightFalloffExponent,
+					min = 0.1,
+					max = 20.0,
+					step = 0.1,
+					format = "float",
+					enabled_by = masterEnableKey,
+				})
+
+				-- Color Enable Toggle
+				table.insert(Layout.settings, {
+					key = colorEnableKey,
+					title = "Enable " .. uiLabel .. " Color",
+					description = "Toggle Custom " .. uiLabel .. " Color.",
+					type = "toggle",
+					default = false,
+					enabled_by = masterEnableKey,
+				})
+
+				-- RGB Color Sliders
+				local rgbConfig = { { k = "R", n = "Red" }, { k = "G", n = "Green" }, { k = "B", n = "Blue" } }
+				for _, rgb in ipairs(rgbConfig) do
+					table.insert(Layout.settings, {
+						key = lightName .. suffix .. "Color" .. rgb.k,
+						title = uiLabel .. " " .. rgb.n,
+						description = rgb.n .. " Channel Value.",
+						type = "slider",
+						default = defaultValues.Color[rgb.k],
+						min = 0.0,
+						max = 255.0,
+						step = 1.0,
+						format = "int",
+						enabled_by = colorEnableKey,
+					})
+				end
+			end
+		end
 	end
 
-	f:write(body)
-	f:close()
-	return true
+	local lines = { "return {" }
+	table.insert(lines, string.format("    name = %q,", Layout.name))
+	table.insert(lines, string.format("    display = %q,", Layout.display))
+	table.insert(lines, string.format("    version = %q,", Layout.version))
+	table.insert(lines, string.format("    github = %q,", Layout.github))
+	table.insert(lines, string.format("    nexus_id = %q,", Layout.nexus_id))
+	table.insert(lines, "    settings = {")
+
+	for _, s in ipairs(Layout.settings) do
+		table.insert(lines, "        {")
+		table.insert(lines, string.format("            key = %q,", s.key))
+		table.insert(lines, string.format("            title = %q,", s.title))
+		table.insert(lines, string.format("            description = %q,", s.description))
+		table.insert(lines, string.format("            type = %q,", s.type))
+		table.insert(lines, string.format("            default = %s,", tostring(s.default)))
+
+		if s.min then
+			table.insert(lines, string.format("            min = %s,", s.min))
+		end
+		if s.max then
+			table.insert(lines, string.format("            max = %s,", s.max))
+		end
+		if s.step then
+			table.insert(lines, string.format("            step = %s,", s.step))
+		end
+		if s.format then
+			table.insert(lines, string.format("            format = %q,", s.format))
+		end
+		if s.enabled_by then
+			table.insert(lines, string.format("            enabled_by = %q,", s.enabled_by))
+		end
+		table.insert(lines, "        },")
+	end
+
+	table.insert(lines, "    }")
+	table.insert(lines, "}")
+
+	local LayoutString = table.concat(lines, "\n")
+	return Config, LayoutString
 end
-
-local manifest = [[
-return {
-	name = "AdjustableLights",
-	display = "Adjustable Lights",
-	version = "1.0.0",
-
-	settings = {
-		-- Flashlight
-		{
-			key = "EnableFlashlight",
-			title = "Enable Flashlight",
-			description = "Toggle Flashlight Customization.",
-			type = "toggle",
-			default = false,
-		},
-		{
-			key = "FlashlightIntensity",
-			title = "Flashlight Intensity",
-			description = "The Intensity Of The Flashlight.",
-			type = "slider",
-			default = 5.0,
-			min = 0.1,
-			max = 50.0,
-			step = 0.5,
-			format = "float",
-			enabled_by = "EnableFlashlight",
-		},
-		{
-			key = "FlashlightRadius",
-			title = "Flashlight Attenuation Radius",
-			description = "The Attenuation Radius Of The Flashlight.",
-			type = "slider",
-			default = 3500.0,
-			min = 100.0,
-			max = 10000.0,
-			step = 100.0,
-			format = "float",
-			enabled_by = "EnableFlashlight",
-		},
-		{
-			key = "FlashlightInnerAngle",
-			title = "Flashlight Inner Cone Angle",
-			description = "The Inner Cone Angle Of The Flashlight.",
-			type = "slider",
-			default = 20.0,
-			min = 0.0,
-			max = 90.0,
-			step = 1.0,
-			format = "float",
-			enabled_by = "EnableFlashlight",
-		},
-		{
-			key = "FlashlightOuterAngle",
-			title = "Flashlight Outer Cone Angle",
-			description = "The Outer Cone Angle Of The Flashlight.",
-			type = "slider",
-			default = 55.0,
-			min = 0.0,
-			max = 90.0,
-			step = 1.0,
-			format = "float",
-			enabled_by = "EnableFlashlight",
-		},
-		{
-			key = "FlashlightTemperature",
-			title = "Flashlight Temperature",
-			description = "The Temperature Of The Flashlight (Disabled When Using Color)",
-			type = "slider",
-			default = 8750.0,
-			min = 1000.0,
-			max = 20000.0,
-			step = 100.0,
-			format = "float",
-			enabled_by = "EnableFlashlight",
-		},
-		{
-			key = "FlashlightFalloff",
-			title = "Flashlight Falloff Exponent",
-			description = "The Falloff Exponent Of The Flashlight.",
-			type = "slider",
-			default = 3.0,
-			min = 0.1,
-			max = 20.0,
-			step = 0.1,
-			format = "float",
-			enabled_by = "EnableFlashlight",
-		},
-		{
-			key = "EnableFlashlightColor",
-			title = "Enable Flashlight Color",
-			description = "Toggle Custom Flashlight Color.",
-			type = "toggle",
-			default = false,
-			enabled_by = "EnableFlashlight",
-		},
-		{
-			key = "FlashlightColorR",
-			title = "Flashlight Red",
-			description = "Red Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableFlashlightColor",
-		},
-		{
-			key = "FlashlightColorG",
-			title = "Flashlight Green",
-			description = "Green Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableFlashlightColor",
-		},
-		{
-			key = "FlashlightColorB",
-			title = "Flashlight Blue",
-			description = "Blue Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableFlashlightColor",
-		},
-
-		-- Tadpole (L)
-		{
-			key = "EnableTadpoleL",
-			title = "Enable Tadpole (L)",
-			description = "Toggle Tadpole (L) Customization.",
-			type = "toggle",
-			default = false,
-		},
-		{
-			key = "TadpoleLIntensity",
-			title = "Tadpole (L) Intensity",
-			description = "The Intensity Of Tadpole (L).",
-			type = "slider",
-			default = 0.35,
-			min = 0.01,
-			max = 5.0,
-			step = 0.05,
-			format = "float",
-			enabled_by = "EnableTadpoleL",
-		},
-		{
-			key = "TadpoleLRadius",
-			title = "Tadpole (L) Attenuation Radius",
-			description = "The Attenuation Radius Of Tadpole (L).",
-			type = "slider",
-			default = 5000.0,
-			min = 100.0,
-			max = 10000.0,
-			step = 100.0,
-			format = "float",
-			enabled_by = "EnableTadpoleL",
-		},
-		{
-			key = "TadpoleLInner",
-			title = "Tadpole (L) Inner Cone Angle",
-			description = "The Inner Cone Angle Of Tadpole (L).",
-			type = "slider",
-			default = 25.0,
-			min = 0.0,
-			max = 90.0,
-			step = 1.0,
-			format = "float",
-			enabled_by = "EnableTadpoleL",
-		},
-		{
-			key = "TadpoleLOuter",
-			title = "Tadpole (L) Outer Cone Angle",
-			description = "The Outer Cone Angle Of Tadpole (L).",
-			type = "slider",
-			default = 50.0,
-			min = 0.0,
-			max = 90.0,
-			step = 1.0,
-			format = "float",
-			enabled_by = "EnableTadpoleL",
-		},
-		{
-			key = "TadpoleLTemperature",
-			title = "Tadpole (L) Temperature",
-			description = "The Temperature Of Tadpole (L) (Disabled When Using Color).",
-			type = "slider",
-			default = 8750.0,
-			min = 1000.0,
-			max = 20000.0,
-			step = 100.0,
-			format = "float",
-			enabled_by = "EnableTadpoleL",
-		},
-		{
-			key = "TadpoleLFalloff",
-			title = "Tadpole (L) Falloff Exponent",
-			description = "The Falloff Exponent Of Tadpole (L).",
-			type = "slider",
-			default = 5.0,
-			min = 0.1,
-			max = 20.0,
-			step = 0.1,
-			format = "float",
-			enabled_by = "EnableTadpoleL",
-		},
-		{
-			key = "EnableTadpoleLColor",
-			title = "Enable Tadpole (L) Color",
-			description = "Toggle Custom Tadpole (L) Color.",
-			type = "toggle",
-			default = false,
-			enabled_by = "EnableTadpoleL",
-		},
-		{
-			key = "TadpoleLColorR",
-			title = "Tadpole (L) Red",
-			description = "Red Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableTadpoleLColor",
-		},
-		{
-			key = "TadpoleLColorG",
-			title = "Tadpole (L) Green",
-			description = "Green Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableTadpoleLColor",
-		},
-		{
-			key = "TadpoleLColorB",
-			title = "Tadpole (L) Blue",
-			description = "Blue Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableTadpoleLColor",
-		},
-
-		-- Tadpole (R)
-		{
-			key = "EnableTadpoleR",
-			title = "Enable Tadpole (R)",
-			description = "Toggle Tadpole (R) Customization.",
-			type = "toggle",
-			default = false,
-		},
-		{
-			key = "TadpoleRIntensity",
-			title = "Tadpole (R) Intensity",
-			description = "The Intensity Of Tadpole (R).",
-			type = "slider",
-			default = 0.35,
-			min = 0.01,
-			max = 5.0,
-			step = 0.05,
-			format = "float",
-			enabled_by = "EnableTadpoleR",
-		},
-		{
-			key = "TadpoleRRadius",
-			title = "Tadpole (R) Attenuation Radius",
-			description = "The Attenuation Radius Of Tadpole (R).",
-			type = "slider",
-			default = 500.0,
-			min = 100.0,
-			max = 5000.0,
-			step = 50.0,
-			format = "float",
-			enabled_by = "EnableTadpoleR",
-		},
-		{
-			key = "TadpoleRInner",
-			title = "Tadpole (R) Inner Cone Angle",
-			description = "The Inner Cone Angle Of Tadpole (R).",
-			type = "slider",
-			default = 25.0,
-			min = 0.0,
-			max = 90.0,
-			step = 1.0,
-			format = "float",
-			enabled_by = "EnableTadpoleR",
-		},
-		{
-			key = "TadpoleROuter",
-			title = "Tadpole (R) Outer Cone Angle",
-			description = "The Outer Cone Angle Of Tadpole (R).",
-			type = "slider",
-			default = 50.0,
-			min = 0.0,
-			max = 90.0,
-			step = 1.0,
-			format = "float",
-			enabled_by = "EnableTadpoleR",
-		},
-		{
-			key = "TadpoleRTemperature",
-			title = "Tadpole (R) Temperature",
-			description = "The Temperature Of Tadpole (R) (Disabled When Using Color).",
-			type = "slider",
-			default = 8750.0,
-			min = 1000.0,
-			max = 20000.0,
-			step = 100.0,
-			format = "float",
-			enabled_by = "EnableTadpoleR",
-		},
-		{
-			key = "TadpoleRFalloff",
-			title = "Tadpole (R) Falloff Exponent",
-			description = "The Falloff Exponent Of Tadpole (R).",
-			type = "slider",
-			default = 3.0,
-			min = 0.1,
-			max = 20.0,
-			step = 0.1,
-			format = "float",
-			enabled_by = "EnableTadpoleR",
-		},
-		{
-			key = "EnableTadpoleRColor",
-			title = "Enable Tadpole (R) Color",
-			description = "Toggle Custom Tadpole (R) Color.",
-			type = "toggle",
-			default = false,
-			enabled_by = "EnableTadpoleR",
-		},
-		{
-			key = "TadpoleRColorR",
-			title = "Tadpole (R) Red",
-			description = "Red Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableTadpoleRColor",
-		},
-		{
-			key = "TadpoleRColorG",
-			title = "Tadpole (R) Green",
-			description = "Green Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableTadpoleRColor",
-		},
-		{
-			key = "TadpoleRColorB",
-			title = "Tadpole (R) Blue",
-			description = "Blue Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableTadpoleRColor",
-		},
-
-		-- WakeMaker (L)
-		{
-			key = "EnableWakeMakerL",
-			title = "Enable WakeMaker (L)",
-			description = "Toggle WakeMaker (L) Customization.",
-			type = "toggle",
-			default = false,
-		},
-		{
-			key = "WakeMakerLIntensity",
-			title = "WakeMaker (L) Intensity",
-			description = "The Intensity Of WakeMaker (L).",
-			type = "slider",
-			default = 5.0,
-			min = 0.1,
-			max = 50.0,
-			step = 0.5,
-			format = "float",
-			enabled_by = "EnableWakeMakerL",
-		},
-		{
-			key = "WakeMakerLRadius",
-			title = "WakeMaker (L) Attenuation Radius",
-			description = "The Attenuation Radius Of WakeMaker (L).",
-			type = "slider",
-			default = 500.0,
-			min = 100.0,
-			max = 5000.0,
-			step = 100.0,
-			format = "float",
-			enabled_by = "EnableWakeMakerL",
-		},
-		{
-			key = "WakeMakerLInner",
-			title = "WakeMaker (L) Inner Cone Angle",
-			description = "The Inner Cone Angle Of WakeMaker (L).",
-			type = "slider",
-			default = 12.7,
-			min = 0.0,
-			max = 90.0,
-			step = 0.1,
-			format = "float",
-			enabled_by = "EnableWakeMakerL",
-		},
-		{
-			key = "WakeMakerLOuter",
-			title = "WakeMaker (L) Outer Cone Angle",
-			description = "The Outer Cone Angle Of WakeMaker (L).",
-			type = "slider",
-			default = 55.0,
-			min = 0.0,
-			max = 90.0,
-			step = 1.0,
-			format = "float",
-			enabled_by = "EnableWakeMakerL",
-		},
-		{
-			key = "WakeMakerLTemperature",
-			title = "WakeMaker (L) Temperature",
-			description = "The Temperature Of WakeMaker (L) (Disabled When Using Color).",
-			type = "slider",
-			default = 8750.0,
-			min = 1000.0,
-			max = 20000.0,
-			step = 100.0,
-			format = "float",
-			enabled_by = "EnableWakeMakerL",
-		},
-		{
-			key = "WakeMakerLFalloff",
-			title = "WakeMaker (L) Falloff Exponent",
-			description = "The Falloff Exponent Of WakeMaker (L).",
-			type = "slider",
-			default = 3.0,
-			min = 0.1,
-			max = 20.0,
-			step = 0.1,
-			format = "float",
-			enabled_by = "EnableWakeMakerL",
-		},
-		{
-			key = "EnableWakeMakerLColor",
-			title = "Enable WakeMaker (L) Color",
-			description = "Toggle Custom WakeMaker (L) Color.",
-			type = "toggle",
-			default = false,
-			enabled_by = "EnableWakeMakerL",
-		},
-		{
-			key = "WakeMakerLColorR",
-			title = "WakeMaker (L) Red",
-			description = "Red Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableWakeMakerLColor",
-		},
-		{
-			key = "WakeMakerLColorG",
-			title = "WakeMaker (L) Green",
-			description = "Green Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableWakeMakerLColor",
-		},
-		{
-			key = "WakeMakerLColorB",
-			title = "WakeMaker (L) Blue",
-			description = "Blue Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableWakeMakerLColor",
-		},
-
-		-- WakeMaker (R)
-		{
-			key = "EnableWakeMakerR",
-			title = "Enable WakeMaker (R)",
-			description = "Toggle WakeMaker (R) Customization.",
-			type = "toggle",
-			default = false,
-		},
-		{
-			key = "WakeMakerRIntensity",
-			title = "WakeMaker (R) Intensity",
-			description = "The Intensity Of WakeMaker (R).",
-			type = "slider",
-			default = 5.0,
-			min = 0.1,
-			max = 50.0,
-			step = 0.5,
-			format = "float",
-			enabled_by = "EnableWakeMakerR",
-		},
-		{
-			key = "WakeMakerRRadius",
-			title = "WakeMaker (R) Attenuation Radius",
-			description = "The Attenuation Radius Of WakeMaker (R).",
-			type = "slider",
-			default = 4000.0,
-			min = 100.0,
-			max = 10000.0,
-			step = 100.0,
-			format = "float",
-			enabled_by = "EnableWakeMakerR",
-		},
-		{
-			key = "WakeMakerRInner",
-			title = "WakeMaker (R) Inner Cone Angle",
-			description = "The Inner Cone Angle Of WakeMaker (R).",
-			type = "slider",
-			default = 12.7,
-			min = 0.0,
-			max = 90.0,
-			step = 0.1,
-			format = "float",
-			enabled_by = "EnableWakeMakerR",
-		},
-		{
-			key = "WakeMakerROuter",
-			title = "WakeMaker (R) Outer Cone Angle",
-			description = "The Outer Cone Angle Of WakeMaker (R).",
-			type = "slider",
-			default = 55.0,
-			min = 0.0,
-			max = 90.0,
-			step = 1.0,
-			format = "float",
-			enabled_by = "EnableWakeMakerR",
-		},
-		{
-			key = "WakeMakerRTemperature",
-			title = "WakeMaker (R) Temperature",
-			description = "The Temperature Of WakeMaker (R) (Disabled When Using Color).",
-			type = "slider",
-			default = 8750.0,
-			min = 1000.0,
-			max = 20000.0,
-			step = 100.0,
-			format = "float",
-			enabled_by = "EnableWakeMakerR",
-		},
-		{
-			key = "WakeMakerRFalloff",
-			title = "WakeMaker (R) Falloff Exponent",
-			description = "The Falloff Exponent Of WakeMaker (R).",
-			type = "slider",
-			default = 3.0,
-			min = 0.1,
-			max = 20.0,
-			step = 0.1,
-			format = "float",
-			enabled_by = "EnableWakeMakerR",
-		},
-		{
-			key = "EnableWakeMakerRColor",
-			title = "Enable WakeMaker (R) Color",
-			description = "Toggle Custom WakeMaker (R) Color.",
-			type = "toggle",
-			default = false,
-			enabled_by = "EnableWakeMakerR",
-		},
-		{
-			key = "WakeMakerRColorR",
-			title = "WakeMaker (R) Red",
-			description = "Red Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableWakeMakerRColor",
-		},
-		{
-			key = "WakeMakerRColorG",
-			title = "WakeMaker (R) Green",
-			description = "Green Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableWakeMakerRColor",
-		},
-		{
-			key = "WakeMakerRColorB",
-			title = "WakeMaker (R) Blue",
-			description = "Blue Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableWakeMakerRColor",
-		},
-
-		-- Scanner
-		{
-			key = "EnableScanner",
-			title = "Enable Scanner Light",
-			description = "Toggle Scanner Light Customization.",
-			type = "toggle",
-			default = false,
-		},
-		{
-			key = "ScannerIntensity",
-			title = "Scanner Intensity",
-			description = "The Intensity Of The Scanner Light.",
-			type = "slider",
-			default = 0.5,
-			min = 0.1,
-			max = 10.0,
-			step = 0.1,
-			format = "float",
-			enabled_by = "EnableScanner",
-		},
-		{
-			key = "ScannerRadius",
-			title = "Scanner Attenuation Radius",
-			description = "The Attenuation Radius Of The Scanner Light.",
-			type = "slider",
-			default = 400.0,
-			min = 10.0,
-			max = 2000.0,
-			step = 10.0,
-			format = "float",
-			enabled_by = "EnableScanner",
-		},
-		{
-			key = "ScannerInner",
-			title = "Scanner Inner Cone Angle",
-			description = "The Inner Cone Angle Of The Scanner Light.",
-			type = "slider",
-			default = 0.0,
-			min = 0.0,
-			max = 90.0,
-			step = 1.0,
-			format = "float",
-			enabled_by = "EnableScanner",
-		},
-		{
-			key = "ScannerOuter",
-			title = "Scanner Outer Cone Angle",
-			description = "The Outer Cone Angle Of The Scanner Light.",
-			type = "slider",
-			default = 80.0,
-			min = 0.0,
-			max = 90.0,
-			step = 1.0,
-			format = "float",
-			enabled_by = "EnableScanner",
-		},
-		{
-			key = "ScannerTemperature",
-			title = "Scanner Temperature",
-			description = "The Temperature Of The Scanner Light (Disabled When Using Color).",
-			type = "slider",
-			default = 6500.0,
-			min = 1000.0,
-			max = 20000.0,
-			step = 100.0,
-			format = "float",
-			enabled_by = "EnableScanner",
-		},
-		{
-			key = "ScannerFalloff",
-			title = "Scanner Falloff Exponent",
-			description = "The Falloff Exponent Of The Scanner Light.",
-			type = "slider",
-			default = 8.0,
-			min = 0.1,
-			max = 20.0,
-			step = 0.1,
-			format = "float",
-			enabled_by = "EnableScanner",
-		},
-		{
-			key = "EnableScannerColor",
-			title = "Enable Scanner Color",
-			description = "Toggle Custom Scanner Color.",
-			type = "toggle",
-			default = false,
-			enabled_by = "EnableScanner",
-		},
-		{
-			key = "ScannerColorR",
-			title = "Scanner Red",
-			description = "Red Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableScannerColor",
-		},
-		{
-			key = "ScannerColorG",
-			title = "Scanner Green",
-			description = "Green Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableScannerColor",
-		},
-		{
-			key = "ScannerColorB",
-			title = "Scanner Blue",
-			description = "Blue Channel Value.",
-			type = "slider",
-			default = 255.0,
-			min = 0.0,
-			max = 255.0,
-			step = 1.0,
-			format = "int",
-			enabled_by = "EnableScannerColor",
-		},
-	},
-}
-]]
-
-write_text(MANIFEST_PATH, manifest)
