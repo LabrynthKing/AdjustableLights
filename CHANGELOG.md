@@ -1,5 +1,10 @@
 # Changelog:-
 
+## Version 1.1.5:-
+- Fix Huge Performance Issues Due To Multi-Object LookUp Every Two Seconds
+- All Lights Are Now Cached By Default Only When They're Created & Updated Only When Settings Are Changed, Making The Mod Much Much Faster
+- Auto Delete Light If Object Was Removed
+
 ## Version 1.1.0:-
 - Added Support For WorkLight
 - Added Support For Tadpole (ScoutRay)

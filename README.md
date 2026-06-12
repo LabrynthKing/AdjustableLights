@@ -16,6 +16,8 @@
 
 - **Hot Reload:** No Need To Restart The Game Or Anything, It Will Automatically Reload Your Settings As Soon As You Apply Them!
 
+- **Mod Manager Support:-** Supports Vortex Mod Manager (This ain't even a feature bro)
+
 ## **Configuration Options:-**
 
 - **Intensity:** How Bright The Light Is. Higher Values Make It Blinding While Lower Values Are Dimmer And Easier On The Eyes.
@@ -49,6 +51,11 @@
 ***
 
 ## **Installation:-**
+
+### **Vortex (Recommended):-**
+1. Download Required Dependencies Using Their Installation Methods
+2. Download This Mod Through The Files Tab Using **Mod Manager Download**
+3. Enjoy!
 
 ### **Manual:-**
 

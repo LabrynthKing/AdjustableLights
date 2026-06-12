@@ -1,7 +1,7 @@
 require("config")
 
 -- Adjustable Lights
--- Version 1.1.0
+-- Version 1.1.5
 
 local MOD_NAME = "Adjustable Lights"
 
@@ -308,12 +308,14 @@ write_text(MANIFEST_PATH, Layout)
 Log("Successfully Generated And Saved Config!")
 
 local function LoadFromShared()
+	---@diagnostic disable-next-line: undefined-global
 	if not ModRef then
 		return false
 	end
 	local changed = false
 
 	for k in pairs(Config) do
+		---@diagnostic disable-next-line: undefined-global
 		local v = ModRef:GetSharedVariable("SN2ModSettings/AdjustableLights/" .. k)
 		if v ~= nil and type(v) == type(Config[k]) and Config[k] ~= v then
 			Config[k] = v
@@ -427,11 +429,15 @@ local function ProcessActorComponents(actor, lightName, lightData)
 	end
 end
 
+--[[
 ---@param instance UObject
 local function IsRealObject(instance)
 	return not string.match(instance:GetFName():ToString(), "Default__")
 end
+]]
 
+-- Removed Cuz It Causes Lag
+--[[
 local function ApplyAll()
 	for lightName, lightData in pairs(Lights) do
 		local actors = FindAllOf(lightData.ShortName)
@@ -444,13 +450,21 @@ local function ApplyAll()
 		end
 	end
 end
+]]
+
+local KnownLights = {}
 
 Log("Setting Up New Object Hooks...")
 for lightName, lightData in pairs(Lights) do
+	---@param actor UObject
+	---@diagnostic disable-next-line: redundant-parameter
 	NotifyOnNewObject(lightData.Path, function(actor)
 		ExecuteWithDelay(250, function()
 			ExecuteInGameThread(function()
+				KnownLights[actor:GetAddress()] = { actor = actor, name = lightName, data = lightData }
+
 				if actor and actor:IsValid() then
+					Log("Found New Light Actor => %s : %s", actor:GetFName():ToString(), actor:GetAddress())
 					ProcessActorComponents(actor, lightName, lightData)
 				end
 			end)
@@ -459,11 +473,24 @@ for lightName, lightData in pairs(Lights) do
 end
 Log("Object Hooks Initialized!")
 
-LoopAsync(2000, function()
-	LoadFromShared()
+LoopAsync(3000, function()
+	if not LoadFromShared() then
+		return false
+	end
+
 	ExecuteInGameThread(function()
-		ApplyAll()
+		for addr, entry in pairs(KnownLights) do
+			if entry.actor and entry.actor:IsValid() then
+				ProcessActorComponents(entry.actor, entry.name, entry.data)
+			else
+				-- Cleanup
+				Log("Deleting Light Actor => %s", addr)
+				KnownLights[addr] = nil
+			end
+		end
 	end)
+
+	return false
 end)
 
-Log("Adjustable Lights v1.1.0 Initialized")
+Log("Adjustable Lights v1.1.5 Initialized")

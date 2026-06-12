@@ -9,7 +9,7 @@ function GenerateConfig(lights)
 	local Layout = {
 		name = "AdjustableLights",
 		display = "Adjustable Lights",
-		version = "1.1.0",
+		version = "1.1.5",
 		github = "LabrynthKing/AdjustableLights",
 		nexus_id = "381",
 		settings = {},
