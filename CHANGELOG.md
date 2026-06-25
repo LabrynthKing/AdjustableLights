@@ -1,5 +1,8 @@
 # Changelog:-
 
+## Version 1.2.0:-
+- Added Re-Apply All Key In Case Of Issues
+
 ## Version 1.1.5:-
 - Fix Huge Performance Issues Due To Multi-Object LookUp Every Two Seconds
 - All Lights Are Now Cached By Default Only When They're Created & Updated Only When Settings Are Changed, Making The Mod Much Much Faster

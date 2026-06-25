@@ -1,9 +1,12 @@
 require("config")
 
 -- Adjustable Lights
--- Version 1.1.5
+-- Version 1.2.0
 
 local MOD_NAME = "Adjustable Lights"
+local MOD_VERSION = "1.2.0"
+
+local InitKeyBinds = false
 
 ---@param message string
 ---@param ... string
@@ -302,7 +305,7 @@ local function write_text(path, body)
 end
 
 Log("Generating Config...")
-local Config, Layout = GenerateConfig(Lights)
+local Config, Layout = GenerateConfig(Lights, MOD_VERSION)
 
 write_text(MANIFEST_PATH, Layout)
 Log("Successfully Generated And Saved Config!")
@@ -429,30 +432,133 @@ local function ProcessActorComponents(actor, lightName, lightData)
 	end
 end
 
---[[
+-- Technically Is This Reduntant??
 ---@param instance UObject
 local function IsRealObject(instance)
 	return not string.match(instance:GetFName():ToString(), "Default__")
 end
-]]
 
--- Removed Cuz It Causes Lag
---[[
+local KnownLights = {}
+
 local function ApplyAll()
 	for lightName, lightData in pairs(Lights) do
 		local actors = FindAllOf(lightData.ShortName)
 		if actors then
 			for _, actor in ipairs(actors) do
 				if IsRealObject(actor) then
+					local addr = actor:GetAddress()
+					Log("Found Light Actor => %s : %s", actor:GetFName():ToString(), addr)
+					KnownLights[addr] = { actor = actor, name = lightName, data = lightData }
 					ProcessActorComponents(actor, lightName, lightData)
 				end
 			end
 		end
 	end
 end
-]]
 
-local KnownLights = {}
+-- HAHA! TIME TO STEAL CODE FROM OTHER MODS MUAHAHAHHAHAHA (Its My Own Mod LMAO)
+local keyRegistry = {
+	["A"] = Key.A,
+	["B"] = Key.B,
+	["C"] = Key.C,
+	["D"] = Key.D,
+	["E"] = Key.E,
+	["F"] = Key.F,
+	["G"] = Key.G,
+	["H"] = Key.H,
+	["I"] = Key.I,
+	["J"] = Key.J,
+	["K"] = Key.K,
+	["L"] = Key.L,
+	["M"] = Key.M,
+	["N"] = Key.N,
+	["O"] = Key.O,
+	["P"] = Key.P,
+	["Q"] = Key.Q,
+	["R"] = Key.R,
+	["S"] = Key.S,
+	["T"] = Key.T,
+	["U"] = Key.U,
+	["V"] = Key.V,
+	["W"] = Key.W,
+	["X"] = Key.X,
+	["Y"] = Key.Y,
+	["Z"] = Key.Z,
+
+	["0"] = Key.ZERO,
+	["1"] = Key.ONE,
+	["2"] = Key.TWO,
+	["3"] = Key.THREE,
+	["4"] = Key.FOUR,
+	["5"] = Key.FIVE,
+	["6"] = Key.SIX,
+	["7"] = Key.SEVEN,
+	["8"] = Key.EIGHT,
+	["9"] = Key.NINE,
+
+	["F1"] = Key.F1,
+	["F2"] = Key.F2,
+	["F3"] = Key.F3,
+	["F4"] = Key.F4,
+	["F5"] = Key.F5,
+	["F6"] = Key.F6,
+	["F7"] = Key.F7,
+	["F8"] = Key.F8,
+	["F9"] = Key.F9,
+	["F10"] = Key.F10,
+	["F11"] = Key.F11,
+	["F12"] = Key.F12,
+
+	["Up"] = Key.UP_ARROW,
+	["Down"] = Key.DOWN_ARROW,
+	["Left"] = Key.LEFT_ARROW,
+	["Right"] = Key.RIGHT_ARROW,
+	["Space"] = Key.SPACE,
+	["Tab"] = Key.TAB,
+	["Escape"] = Key.ESCAPE,
+	["Backspace"] = Key.BACKSPACE,
+	["Home"] = Key.HOME,
+	["End"] = Key.END,
+	["PageUp"] = Key.PAGE_UP,
+	["PageDown"] = Key.PAGE_DOWN,
+	["CapsLock"] = Key.CAPS_LOCK,
+
+	["LeftMouseButton"] = Key.LEFT_MOUSE_BUTTON,
+	["RightMouseButton"] = Key.RIGHT_MOUSE_BUTTON,
+	["MiddleMouseButton"] = Key.MIDDLE_MOUSE_BUTTON,
+	["ThumbMouseButton"] = Key.XBUTTON_ONE,
+	["ThumbMouseButton2"] = Key.XBUTTON_TWO,
+}
+
+local registeredBinds = {}
+
+---@param keyName string
+local function BindKeyString(keyName)
+	if not keyName or keyName == "" then
+		return
+	end
+
+	local keyConst = keyRegistry[keyName]
+	if not keyConst then
+		return
+	end
+
+	if registeredBinds[keyConst] then
+		return
+	end
+	registeredBinds[keyConst] = true
+
+	RegisterKeyBind(keyConst, function()
+		ExecuteInGameThread(function()
+			if
+				Config.ReloadAllKeyBind == keyName
+				or (Config.ReloadAllKeyBind_Alt ~= "" and Config.ReloadAllKeyBind_Alt == keyName)
+			then
+				ApplyAll()
+			end
+		end)
+	end)
+end
 
 Log("Setting Up New Object Hooks...")
 for lightName, lightData in pairs(Lights) do
@@ -474,6 +580,13 @@ end
 Log("Object Hooks Initialized!")
 
 LoopAsync(3000, function()
+	if not InitKeyBinds then
+		LoadFromShared()
+		BindKeyString(Config.ReloadAllKeyBind)
+		BindKeyString(Config.ReloadAllKeyBind_Alt)
+		InitKeyBinds = true
+	end
+
 	if not LoadFromShared() then
 		return false
 	end
@@ -488,9 +601,12 @@ LoopAsync(3000, function()
 				KnownLights[addr] = nil
 			end
 		end
+
+		BindKeyString(Config.ReloadAllKeyBind)
+		BindKeyString(Config.ReloadAllKeyBind_Alt)
 	end)
 
 	return false
 end)
 
-Log("Adjustable Lights v1.1.5 Initialized")
+Log("Adjustable Lights v%s Initialized", MOD_VERSION)

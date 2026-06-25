@@ -2,18 +2,30 @@ local Order = { "Flashlight", "Wakemaker", "Scanner", "Worklight", "Tadpole", "S
 
 ---Yes I Am Lazy
 ---@param lights table<string, Light>
+---@param version string
 ---@return table Config
 ---@return string LayoutString
-function GenerateConfig(lights)
+function GenerateConfig(lights, version)
 	local Config = {}
 	local Layout = {
 		name = "AdjustableLights",
 		display = "Adjustable Lights",
-		version = "1.1.5",
+		version = version,
 		github = "LabrynthKing/AdjustableLights",
 		nexus_id = "381",
 		settings = {},
 	}
+
+	Config["ReloadAllKeyBind"] = "F6"
+	Config["ReloadAllKeyBind_Alt"] = ""
+
+	table.insert(Layout.settings, {
+		key = "ReloadAllKeyBind",
+		title = "Re-Apply All KeyBind",
+		description = "Key To Re-Apply Lighting To ALL Lights Currently Present In Case It's Stuck (May Cause A Small Lag-Spike For A Second)",
+		type = "keybind",
+		default = "F6",
+	})
 
 	for _, lightName in ipairs(Order) do
 		local lightData = lights[lightName]
@@ -183,7 +195,15 @@ function GenerateConfig(lights)
 		table.insert(lines, string.format("            title = %q,", s.title))
 		table.insert(lines, string.format("            description = %q,", s.description))
 		table.insert(lines, string.format("            type = %q,", s.type))
-		table.insert(lines, string.format("            default = %s,", tostring(s.default)))
+
+		-- Wow Only Reason To Add This Was The Keybind (I Am Stupid)
+		local defaultVal
+		if type(s.default) == "string" then
+			defaultVal = string.format("%q", s.default)
+		else
+			defaultVal = tostring(s.default)
+		end
+		table.insert(lines, string.format("            default = %s,", defaultVal))
 
 		if s.min then
 			table.insert(lines, string.format("            min = %s,", s.min))

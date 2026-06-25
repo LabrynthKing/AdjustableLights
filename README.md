@@ -16,6 +16,8 @@
 
 - **Hot Reload:** No Need To Restart The Game Or Anything, It Will Automatically Reload Your Settings As Soon As You Apply Them!
 
+- **Unstuck Key:** Lights Not Applying? ~~WELL SKILL ISSUE~~ There's A Keybind To Re-Apply All Lights!
+
 - **Mod Manager Support:-** Supports Vortex Mod Manager (This ain't even a feature bro)
 
 ## **Configuration Options:-**
@@ -34,6 +36,8 @@
 
 - **Color (RGB):** Gives You Full Control Over The Light's Color, You Can Use Any [RGB Color Calculator](https://www.rapidtables.com/web/color/RGB_Color.html) To Get The Values!
 
+- **Re-Apply All KeyBind:** Allows You To Set The Keybind To Re-Apply All Light Settings In Case It's Stuck (Default=F6)
+
 <u>**Note:- You Can Use In-Game Settings Through The [Mod Settings For Subnautica 2](https://www.nexusmods.com/subnautica2/mods/20) Mod To Adjust The Values!**</u>
 
 ***
@@ -41,12 +45,12 @@
 ## **Currently Supported Lights:-**
 
 - **Flashlight**
-- **Wakemaker**
+- **Wakemaker (L & R)**
 - **Scanner**
 - **WorkLight**
-- **Tadpole (Default)**
-- **Tadpole (Scout Ray)**
-- **Tadpole (Hauler)**
+- **Tadpole (Default) (L & R)**
+- **Tadpole (Scout Ray) (L & R)**
+- **Tadpole (Hauler) (L & R & M)**
 
 ***
 
