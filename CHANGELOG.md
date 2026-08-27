@@ -1,5 +1,8 @@
 # Changelog:-
 
+## Version 1.3.0:-
+- Added Support For Translation Helper
+
 ## Version 1.2.0:-
 - Added Re-Apply All Key In Case Of Issues
 

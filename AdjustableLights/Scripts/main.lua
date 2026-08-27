@@ -1,17 +1,29 @@
 require("config")
 
 -- Adjustable Lights
--- Version 1.2.0
+-- Version 1.3.0
 
 local MOD_NAME = "Adjustable Lights"
-local MOD_VERSION = "1.2.0"
+local MOD_UNIQUE_NAME = "AdjustableLights"
+local MOD_VERSION = "1.3.0"
 
 local InitKeyBinds = false
 
----@param message string
----@param ... string
-local function Log(message, ...)
-	print(string.format("[%s] %s \n", MOD_NAME, string.format(message, ...)))
+---@param key string
+---@param fallback string
+---@return string
+local function Translate(key, fallback)
+    if not TH then
+        return fallback
+    end
+    return TH.Translate(MOD_UNIQUE_NAME, key, fallback)
+end
+
+---@param key string
+---@param fallback string
+---@param ... any
+local function Log(key, fallback, ...)
+    print(string.format("[%s] %s \n", MOD_NAME, string.format(Translate(key, fallback), ...)))
 end
 
 ---@class RGB
@@ -286,7 +298,11 @@ local Lights = {
 	},
 }
 
-Log("Initializing...")
+if TH then
+    TH.RegisterMod(MOD_UNIQUE_NAME)
+end
+
+Log("init", "Initializing...")
 
 local MANIFEST_PATH = "./ue4ss/Mods/SN2ModSettings/registrations/AdjustableLights.lua"
 
@@ -304,11 +320,11 @@ local function write_text(path, body)
 	return true
 end
 
-Log("Generating Config...")
+Log("genConfig", "Generating Config...")
 local Config, Layout = GenerateConfig(Lights, MOD_VERSION)
 
 write_text(MANIFEST_PATH, Layout)
-Log("Successfully Generated And Saved Config!")
+Log("configSuccess", "Successfully Generated And Saved Config!")
 
 local function LoadFromShared()
 	---@diagnostic disable-next-line: undefined-global
@@ -447,7 +463,7 @@ local function ApplyAll()
 			for _, actor in ipairs(actors) do
 				if IsRealObject(actor) then
 					local addr = actor:GetAddress()
-					Log("Found Light Actor => %s : %s", actor:GetFName():ToString(), addr)
+					Log("foundActor", "Found Light Actor => %s : %s", actor:GetFName():ToString(), addr)
 					KnownLights[addr] = { actor = actor, name = lightName, data = lightData }
 					ProcessActorComponents(actor, lightName, lightData)
 				end
@@ -560,7 +576,7 @@ local function BindKeyString(keyName)
 	end)
 end
 
-Log("Setting Up New Object Hooks...")
+Log("newHook", "Setting Up New Object Hooks...")
 for lightName, lightData in pairs(Lights) do
 	---@param actor UObject
 	---@diagnostic disable-next-line: redundant-parameter
@@ -570,14 +586,14 @@ for lightName, lightData in pairs(Lights) do
 				KnownLights[actor:GetAddress()] = { actor = actor, name = lightName, data = lightData }
 
 				if actor and actor:IsValid() then
-					Log("Found New Light Actor => %s : %s", actor:GetFName():ToString(), actor:GetAddress())
+					Log("newActor", "Found New Light Actor => %s : %s", actor:GetFName():ToString(), actor:GetAddress())
 					ProcessActorComponents(actor, lightName, lightData)
 				end
 			end)
 		end)
 	end)
 end
-Log("Object Hooks Initialized!")
+Log("objHooks", "Object Hooks Initialized!")
 
 LoopAsync(3000, function()
 	if not InitKeyBinds then
@@ -597,7 +613,7 @@ LoopAsync(3000, function()
 				ProcessActorComponents(entry.actor, entry.name, entry.data)
 			else
 				-- Cleanup
-				Log("Deleting Light Actor => %s", addr)
+				Log("delData", "Deleting Light Actor => %s", addr)
 				KnownLights[addr] = nil
 			end
 		end
@@ -609,4 +625,4 @@ LoopAsync(3000, function()
 	return false
 end)
 
-Log("Adjustable Lights v%s Initialized", MOD_VERSION)
+Log("initDone", "Adjustable Lights v%s Initialized", MOD_VERSION)

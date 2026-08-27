@@ -1,6 +1,18 @@
 local Order = { "Flashlight", "Wakemaker", "Scanner", "Worklight", "Tadpole", "ScoutRay", "Hauler" }
 
----Yes I Am Lazy
+local MOD_UNIQUE_NAME = "AdjustableLights"
+
+---@param key string
+---@param fallback string
+---@return string
+local function Translate(key, fallback)
+    if not TH then
+        return fallback
+    end
+    return TH.Translate(MOD_UNIQUE_NAME, key, fallback)
+end
+
+---Yes I Am Lazy (Still, Just With Translations Now)
 ---@param lights table<string, Light>
 ---@param version string
 ---@return table Config
@@ -21,8 +33,8 @@ function GenerateConfig(lights, version)
 
 	table.insert(Layout.settings, {
 		key = "ReloadAllKeyBind",
-		title = "Re-Apply All KeyBind",
-		description = "Key To Re-Apply Lighting To ALL Lights Currently Present In Case It's Stuck (May Cause A Small Lag-Spike For A Second)",
+		title = Translate("ReloadAllKeyBind", "Re-Apply All KeyBind"),
+		description = Translate("ReloadAllKeyBind_desc", "Key To Re-Apply Lighting To ALL Lights Currently Present In Case It's Stuck (May Cause A Small Lag-Spike For A Second)"),
 		type = "keybind",
 		default = "F6",
 	})
@@ -61,17 +73,18 @@ function GenerateConfig(lights, version)
 				-- Master Toggle
 				table.insert(Layout.settings, {
 					key = masterEnableKey,
-					title = "Enable " .. uiLabel,
-					description = "Toggle " .. uiLabel .. " Customization.",
+					title = Translate(masterEnableKey, "Enable " .. uiLabel),
+					description = Translate(masterEnableKey .. "_desc", "Toggle " .. uiLabel .. " Customization."),
 					type = "toggle",
 					default = false,
 				})
 
 				-- Intensity Slider
+				local intensityKey = lightName .. suffix .. "Intensity"
 				table.insert(Layout.settings, {
-					key = lightName .. suffix .. "Intensity",
-					title = uiLabel .. " Intensity",
-					description = "The Intensity Of The " .. uiLabel .. ".",
+					key = intensityKey,
+					title = Translate(intensityKey, uiLabel .. " Intensity"),
+					description = Translate(intensityKey .. "_desc", "The Intensity Of The " .. uiLabel .. "."),
 					type = "slider",
 					default = defaultValues.Intensity,
 					min = (defaultValues.Intensity < 1) and 0.01 or 0.1,
@@ -82,10 +95,11 @@ function GenerateConfig(lights, version)
 				})
 
 				-- Attenuation Radius Slider
+				local radiusKey = lightName .. suffix .. "Radius"
 				table.insert(Layout.settings, {
-					key = lightName .. suffix .. "Radius",
-					title = uiLabel .. " Attenuation Radius",
-					description = "The Attenuation Radius Of The " .. uiLabel .. ".",
+					key = radiusKey,
+					title = Translate(radiusKey, uiLabel .. " Attenuation Radius"),
+					description = Translate(radiusKey .. "_desc", "The Attenuation Radius Of The " .. uiLabel .. "."),
 					type = "slider",
 					default = defaultValues.AttenuationRadius,
 					min = 100.0,
@@ -96,10 +110,11 @@ function GenerateConfig(lights, version)
 				})
 
 				-- Inner Cone Angle Slider
+				local innerAngleKey = lightName .. suffix .. "InnerAngle"
 				table.insert(Layout.settings, {
-					key = lightName .. suffix .. "InnerAngle",
-					title = uiLabel .. " Inner Cone Angle",
-					description = "The Inner Cone Angle Of The " .. uiLabel .. ".",
+					key = innerAngleKey,
+					title = Translate(innerAngleKey, uiLabel .. " Inner Cone Angle"),
+					description = Translate(innerAngleKey .. "_desc", "The Inner Cone Angle Of The " .. uiLabel .. "."),
 					type = "slider",
 					default = defaultValues.InnerConeAngle,
 					min = 0.0,
@@ -110,10 +125,11 @@ function GenerateConfig(lights, version)
 				})
 
 				-- Outer Cone Angle Slider
+				local outerAngleKey = lightName .. suffix .. "OuterAngle"
 				table.insert(Layout.settings, {
-					key = lightName .. suffix .. "OuterAngle",
-					title = uiLabel .. " Outer Cone Angle",
-					description = "The Outer Cone Angle Of The " .. uiLabel .. ".",
+					key = outerAngleKey,
+					title = Translate(outerAngleKey, uiLabel .. " Outer Cone Angle"),
+					description = Translate(outerAngleKey .. "_desc", "The Outer Cone Angle Of The " .. uiLabel .. "."),
 					type = "slider",
 					default = defaultValues.OuterConeAngle,
 					min = 0.0,
@@ -124,10 +140,11 @@ function GenerateConfig(lights, version)
 				})
 
 				-- Temperature Slider
+				local temperatureKey = lightName .. suffix .. "Temperature"
 				table.insert(Layout.settings, {
-					key = lightName .. suffix .. "Temperature",
-					title = uiLabel .. " Temperature",
-					description = "The Temperature Of The " .. uiLabel .. " (Disabled When Using Color)",
+					key = temperatureKey,
+					title = Translate(temperatureKey, uiLabel .. " Temperature"),
+					description = Translate(temperatureKey .. "_desc", "The Temperature Of The " .. uiLabel .. " (Disabled When Using Color)"),
 					type = "slider",
 					default = defaultValues.Temperature,
 					min = 1000.0,
@@ -138,10 +155,11 @@ function GenerateConfig(lights, version)
 				})
 
 				-- Falloff Exponent Slider
+				local falloffKey = lightName .. suffix .. "Falloff"
 				table.insert(Layout.settings, {
-					key = lightName .. suffix .. "Falloff",
-					title = uiLabel .. " Falloff Exponent",
-					description = "The Falloff Exponent Of The " .. uiLabel .. ".",
+					key = falloffKey,
+					title = Translate(falloffKey, uiLabel .. " Falloff Exponent"),
+					description = Translate(falloffKey .. "_desc", "The Falloff Exponent Of The " .. uiLabel .. "."),
 					type = "slider",
 					default = defaultValues.LightFalloffExponent,
 					min = 0.1,
@@ -154,8 +172,8 @@ function GenerateConfig(lights, version)
 				-- Color Enable Toggle
 				table.insert(Layout.settings, {
 					key = colorEnableKey,
-					title = "Enable " .. uiLabel .. " Color",
-					description = "Toggle Custom " .. uiLabel .. " Color.",
+					title = Translate(colorEnableKey, "Enable " .. uiLabel .. " Color"),
+					description = Translate(colorEnableKey .. "_desc", "Toggle Custom " .. uiLabel .. " Color."),
 					type = "toggle",
 					default = false,
 					enabled_by = masterEnableKey,
@@ -164,10 +182,11 @@ function GenerateConfig(lights, version)
 				-- RGB Color Sliders
 				local rgbConfig = { { k = "R", n = "Red" }, { k = "G", n = "Green" }, { k = "B", n = "Blue" } }
 				for _, rgb in ipairs(rgbConfig) do
+					local colorKey = lightName .. suffix .. "Color" .. rgb.k
 					table.insert(Layout.settings, {
-						key = lightName .. suffix .. "Color" .. rgb.k,
-						title = uiLabel .. " " .. rgb.n,
-						description = rgb.n .. " Channel Value.",
+						key = colorKey,
+						title = Translate(colorKey, uiLabel .. " " .. rgb.n),
+						description = Translate(colorKey .. "_desc", rgb.n .. " Channel Value."),
 						type = "slider",
 						default = defaultValues.Color[rgb.k],
 						min = 0.0,
