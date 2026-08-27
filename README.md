@@ -20,6 +20,8 @@
 
 - **Mod Manager Support:-** Supports Vortex Mod Manager (This ain't even a feature bro)
 
+- **Translation Helper Support:-** Supports [Translation Helper](https://github.com/LabrynthKing/TranslationHelper) For Translations, Keys Available At [GitHub](https://github.com/LabrynthKing/AdjustableLights/blob/main/keys.txt)
+
 ## **Configuration Options:-**
 
 - **Intensity:** How Bright The Light Is. Higher Values Make It Blinding While Lower Values Are Dimmer And Easier On The Eyes.
@@ -80,7 +82,7 @@
 
 - This Is My Fourth Mod Ever (I Really Need To Stop Saying That Every Mod LOL). This Was One Of My First Expiriences With Lua Which Felt Kind Of Weird B/C I Am Very Used To Types Lol (As You Can See By All The Annotations In The Code).
 - Please Report Any Bugs In The Posts/Bugs Tab
-- The Code Is Fully Open Source On My [Github](https://github.com/LabrynthKing/AdjustableLights)
+- The Code Is Fully Open Source On My [Github](https://github.com/LabrynthKing/AdjustableLights)
 - My Discord Username Is `labrynthking`
 
 ## **Credits:-**
